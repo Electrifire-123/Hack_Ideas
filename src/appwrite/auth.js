@@ -1,5 +1,5 @@
 import conf from '../conf/conf'
-import { Client, Account, Databases, ID } from 'appwrite'
+import { Client, Account, Databases, ID, Query } from 'appwrite'
 
 export class AuthService {
     Client = new Client();
@@ -39,7 +39,7 @@ export class AuthService {
             ID.unique(),
             user
           );
-      
+            console.log("user:",newUser)
           return newUser;
         } catch (error) {
           console.log(error);
@@ -48,7 +48,8 @@ export class AuthService {
 
     async login({email, password}){
         try {
-            return await this.account.createEmailSession(email, password);
+            const user = await this.account.createEmailSession(email, password);
+            return user
         } catch (error) {
             console.log("Appwrite Service Login Failed ::",error)
             throw error;
@@ -64,9 +65,22 @@ export class AuthService {
         return null
     }
 
+    async getUser(id){
+        try{
+            const currentUser = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteUsersCollectionId,
+                [Query.equal("employeeId", id)]
+              );
+            return currentUser
+        }catch(error){
+            console.log("Appwrite service get user failed ::",error)
+        }
+    }
+
     async logout(){
         try {
-            await this.account.deleteSession();
+            return await this.account.deleteSession('current');
         } catch (error) {
             console.log('Appwrite Service logout failed :: ',error)
         }

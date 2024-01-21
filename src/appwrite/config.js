@@ -12,23 +12,25 @@ export class Service{
         this.databases = new Databases(this.client)
     }
 
-    async createChallenge({title, description, challengeId, userId, tags}){
+    async createChallenge({title, description, userId, tags}){
         try {
-            const tagsArr = tags.repace(/ /g,'').split(',') || [];
+            // const tagsArr = tags.replace(/ /g,'').split(',') || [];
 
             const newChallenge = await this.databases.createDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteChanllengesCollectionId,
                 ID.unique(),
                 {
-                    creator: userId,
-                    description: description,
                     title: title,
-                    challengeId: challengeId,
-                    tags: tagsArr
+                    description: description,
+                    creator: userId,
+                    createdDate: new Date().toLocaleDateString(),
+                    tags: tags
                 }
             )
             if(newChallenge){
+                console.log(userId)
+                console.log("new challenge",newChallenge)
                 return newChallenge
             }
         } catch (error) {
@@ -38,7 +40,6 @@ export class Service{
 
     async updateChallenge(challengeId,{title, description, tags}){
         try {
-            const tagsArr = tags.repace(/ /g,'').split(',') || [];
             return await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteChanllengesCollectionId,
@@ -46,7 +47,7 @@ export class Service{
                 {
                     title,
                     description,
-                    tags: tagsArr
+                    tags
                 }
             )
         } catch (error) {
@@ -81,6 +82,7 @@ export class Service{
 
     async getAllChallenge(){
         try{
+            console.log("DatabaseId :",conf.appwriteDatabaseId)
             return await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteChanllengesCollectionId,
@@ -92,6 +94,7 @@ export class Service{
 
     async upVoteChallenge(challengeId,upVotes){
         try {
+            console.log("ChallengeId",challengeId,"upvotes::",upVotes)
             return await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteChanllengesCollectionId,
@@ -118,3 +121,6 @@ export class Service{
         }
     }
 }
+
+const service = new Service()
+export default service
